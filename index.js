@@ -1,115 +1,29 @@
 import * as tf from '@tensorflow/tfjs';
 
-// import {MnistData} from './data';
-
-// const model = await tf.loadModel('http://localhost:8080/model/model.json');
-
 let model = tf.sequential();
+let loading = $("#loading");
 
 async function loadModel() {
     console.log('Loading model');
-    const model = await tf.loadModel('http://localhost:8080/model/model.json');
+    const model = await tf.loadModel('http://localhost:8080/model_2/model.json');
     console.log('Model loaded');
-  console.log(model);
+    loading.hide();
   return model;
 };
 
 loadModel()
   .then( (modelo) => {
-    // do other stuff
-
-    console.log(modelo);  //this line produces the error below
     model = modelo;
   });
 
-// model.add(tf.layers.conv2d({
-//   inputShape: [28, 28, 1],
-//   kernelSize: 5,
-//   filters: 8,
-//   strides: 1,
-//   activation: 'relu',
-//   kernelInitializer: 'varianceScaling'
-// }));
-
-// model.add(tf.layers.maxPooling2d({poolSize: [2, 2], strides: [2, 2]}));
-
-// model.add(tf.layers.conv2d({
-//   kernelSize: 5,
-//   filters: 16,
-//   strides: 1,
-//   activation: 'relu',
-//   kernelInitializer: 'varianceScaling'
-// }));
-
-// model.add(tf.layers.maxPooling2d({poolSize: [2, 2], strides: [2, 2]}));
-
-// model.add(tf.layers.flatten());
-
-// model.add(tf.layers.dense(
-//     {units: 10, kernelInitializer: 'varianceScaling', activation: 'softmax'}));
-
-
-// const LEARNING_RATE = 0.15;
-
-// const optimizer = tf.train.sgd(LEARNING_RATE);
-
-
-// model.compile({
-//   optimizer: optimizer,
-//   loss: 'categoricalCrossentropy',
-//   metrics: ['accuracy'],
-// });
-
-
-// const BATCH_SIZE = 64;
-
-// const TRAIN_BATCHES = 150;
-
-// const TEST_BATCH_SIZE = 1000;
-
-// const TEST_ITERATION_FREQUENCY = 5;
-
-// async function train() {
-
-//   const lossValues = [];
-//   const accuracyValues = [];
-
-//   for (let i = 0; i < TRAIN_BATCHES; i++) {
-//     const [batch, validationData] = tf.tidy(() => {
-//       const batch = data.nextTrainBatch(BATCH_SIZE);
-//       batch.xs = batch.xs.reshape([BATCH_SIZE, 28, 28, 1]);
-
-//       let validationData;
-
-//       if (i % TEST_ITERATION_FREQUENCY === 0) {
-//         const testBatch = data.nextTestBatch(TEST_BATCH_SIZE);
-//         validationData = [
-          
-//           testBatch.xs.reshape([TEST_BATCH_SIZE, 28, 28, 1]), testBatch.labels
-//         ];
-//       }
-//       return [batch, validationData];
-//     });
-
-//     const history = await model.fit(
-//         batch.xs, batch.labels,
-//         {batchSize: BATCH_SIZE, validationData, epochs: 1});
-
-//     const loss = history.history.loss[0];
-//     const accuracy = history.history.acc[0];
-
-//     console.log(loss, accuracy);
-//   }
-//   console.log("Trained!!");
-// }
-const emnist = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabdefghnqrt";
+const emnist = ['0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','a','b','d','e','f','g','h','n','q','r','t'];
 async function showPredictions(imageData) {
 
   const pred = await tf.tidy(() => {
     
-    let img = tf.fromPixels(imageData, 1);
-    img = img.reshape([1, 28, 28, 1]);
-    // img = img.reshape([-1, 28 * 28]);
+    let img = tf.fromPixels(imageData, 1); 
+    // img = img.reshape([1, 28, 28, 1]);   // Reshape para model_1
+    img = img.reshape([-1, 28 * 28]);       // Reshape para model_2
     img = tf.cast(img, 'float32');
     console.log("img: " + img);
 
@@ -119,23 +33,16 @@ async function showPredictions(imageData) {
     console.log(predictions);
     console.log(indexOfMax(predictions));
     console.log(emnist[indexOfMax(predictions)]);
+    $("#prediccion").html(emnist[indexOfMax(predictions)]);
+
+    // predictions.forEach((elem) => {
+    //   return elem * 100;
+    // })
+    console.log(predictions);
+    actualizarGrafico(predictions);
   });
 }
 
-let data;
-async function load() {
-  data = new MnistData();
-  await data.load();
-  document.getElementById("status").innerHTML = "Data loaded";
-}
-
-async function mnist() {
-  await load();
-  await train();
-
-  // showPredictions();
-}
-// mnist(); ####################################
 
 $('#ejecutar').click(function(){
   console.log("ejecutando");
@@ -164,6 +71,18 @@ let mousePressed = false;
 let lastX, lastY;
 let ctx;
 let ctx2;
+let ctxChar = document.getElementById("myChart").getContext('2d');
+let myChart;
+let colores = ['#FF6633', '#FFB399', '#FF33FF', '#FFFF99', '#00B3E6', 
+      '#E6B333', '#3366E6', '#999966', '#99FF99', '#B34D4D',
+      '#80B300', '#809900', '#E6B3B3', '#6680B3', '#66991A', 
+      '#FF99E6', '#CCFF1A', '#FF1A66', '#E6331A', '#33FFCC',
+      '#66994D', '#B366CC', '#4D8000', '#B33300', '#CC80CC', 
+      '#66664D', '#991AFF', '#E666FF', '#4DB3FF', '#1AB399',
+      '#E666B3', '#33991A', '#CC9999', '#B3B31A', '#00E680', 
+      '#4D8066', '#809980', '#E6FF80', '#1AFF33', '#999933',
+      '#FF3380', '#CCCC00', '#66E64D', '#4D80CC', '#9900B3', 
+      '#E64D66', '#4DB380']
 
 function InitThis() {
     ctx = canvas.getContext("2d");
@@ -175,6 +94,8 @@ function InitThis() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx2.fillStyle = "black";
     ctx2.fillRect(0, 0, canvas.width, canvas.height);
+
+    actualizarGrafico(new Array(47));
 
     $('#myCanvas').mousedown(function (e) {
         mousePressed = true;
@@ -222,6 +143,9 @@ function clearArea() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx2.fillStyle = "black";
     ctx2.fillRect(0, 0, canvas.width, canvas.height);
+
+    actualizarGrafico(new Array(47));
+    $("#prediccion").html("~");
 }
 
 InitThis(); //################################################
@@ -244,4 +168,36 @@ function indexOfMax(arr) {
     }
 
     return maxIndex;
+}
+
+function actualizarGrafico(data){
+  if(myChart) myChart.destroy();
+  myChart = new Chart(ctxChar, {
+      type: 'bar',
+      data: {
+          labels: emnist,
+          datasets: [{
+              label: "Valores de predicción de la red neuronal",
+              backgroundColor: colores,
+              borderColor: colores,
+              data: data,
+              borderWidth: 1
+          }]
+      },
+      options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: {
+            duration: 2000,
+            easing: 'easeInOutQuart'
+          },
+          scales: {
+              yAxes: [{
+                  ticks: {
+                      beginAtZero:true
+                  }
+              }]
+          }
+      }
+  });
 }
