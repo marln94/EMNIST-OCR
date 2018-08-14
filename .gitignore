@@ -1,0 +1,4 @@
+node_modules/
+.cache/
+dist/
+emnist_python/data/emnist-balanced-train.csv
