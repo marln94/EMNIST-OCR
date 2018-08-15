@@ -5,7 +5,8 @@ let loading = $("#loading");
 
 async function loadModel() {
     console.log('Loading model');
-    const model = await tf.loadModel('http://localhost:8080/model_2/model.json');
+    const model = await tf.loadModel('https://repounah.firebaseapp.com/model.json');
+    // const model = await tf.loadModel('http://localhost:8080/model_2/model.json');
     console.log('Model loaded');
     loading.hide();
   return model;
@@ -85,38 +86,64 @@ let colores = ['#FF6633', '#FFB399', '#FF33FF', '#FFFF99', '#00B3E6',
       '#E64D66', '#4DB380']
 
 function InitThis() {
-    ctx = canvas.getContext("2d");
-    ctx2 = canvas2.getContext("2d");
-    ctx2.translate(14, 14);
-    ctx2.rotate(3*Math.PI/2);
-    ctx2.scale(-1, 1);
-    ctx.fillStyle = "black";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx2.fillStyle = "black";
-    ctx2.fillRect(0, 0, canvas.width, canvas.height);
+  ctx = canvas.getContext("2d");
+  ctx2 = canvas2.getContext("2d");
+  ctx2.translate(14, 14);
+  ctx2.rotate(3*Math.PI/2);
+  ctx2.scale(-1, 1);
+  ctx.fillStyle = "black";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx2.fillStyle = "black";
+  ctx2.fillRect(0, 0, canvas.width, canvas.height);
 
-    actualizarGrafico(new Array(47));
+  actualizarGrafico(new Array(47));
 
-    $('#myCanvas').mousedown(function (e) {
-        mousePressed = true;
-        Draw(e.pageX - $(this).offset().left, e.pageY - $(this).offset().top, false);
-    });
+  $('#myCanvas').mousedown(function (e) {
+      mousePressed = true;
+      Draw(e.pageX - $(this).offset().left, e.pageY - $(this).offset().top, false, e);
+  });
 
-    $('#myCanvas').mousemove(function (e) {
-        if (mousePressed) {
-            Draw(e.pageX - $(this).offset().left, e.pageY - $(this).offset().top, true);
-        }
-    });
+  $('#myCanvas').mousemove(function (e) {
+      if (mousePressed) {
+          Draw(e.pageX - $(this).offset().left, e.pageY - $(this).offset().top, true, e);
+      }
+  });
 
-    $('#myCanvas').mouseup(function (e) {
-        mousePressed = false;
+  $('#myCanvas').mouseup(function (e) {
+      mousePressed = false;
+  });
+    $('#myCanvas').mouseleave(function (e) {
+      mousePressed = false;
+  });
+
+  // Set up touch events for mobile
+  canvas.addEventListener("touchstart", function (e) {
+    e.preventDefault();
+    var touch = e.touches[0];
+    var mouseEvent = new MouseEvent("mousedown", {
+      clientX: touch.clientX,
+      clientY: touch.clientY
     });
-      $('#myCanvas').mouseleave(function (e) {
-        mousePressed = false;
+    canvas.dispatchEvent(mouseEvent);
+  }, false);
+  canvas.addEventListener("touchend", function (e) {
+    e.preventDefault();
+    var mouseEvent = new MouseEvent("mouseup", {});
+    canvas.dispatchEvent(mouseEvent);
+  }, false);
+  canvas.addEventListener("touchmove", function (e) {
+    e.preventDefault();
+    var touch = e.touches[0];
+    var mouseEvent = new MouseEvent("mousemove", {
+      clientX: touch.clientX,
+      clientY: touch.clientY
     });
+    canvas.dispatchEvent(mouseEvent);
+  }, false);
+
 }
 
-function Draw(x, y, isDown) {
+function Draw(x, y, isDown, e) {
     if (isDown) {
         ctx.beginPath();
         ctx.strokeStyle = "#f6f6f6";
